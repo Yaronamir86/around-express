@@ -2,11 +2,9 @@ const Card = require('../models/card');
 const {
   CREATE,
   INVALID_DATA,
-  NOT_FOUND,
   SERVER_ERROR,
-  INVALID_DATA_MESSAGE,
-  CARD_NOT_FOUND_MESSAGE,
   SERVER_ERROR_MESSAGE,
+  cardIdValidateProcess,
 } = require('../utils/constants');
 
 // GET REQUEST
@@ -40,18 +38,13 @@ const createCard = (req, res) => {
 // ROUTE = ('/cards/:_id')
 const deleteCardById = (req, res) => {
   const { _id } = req.params;
-  Card.findByIdAndRemove(_id)
-    .orFail()
-    .then((card) => res.status(200).send(card))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(NOT_FOUND).send({ error: CARD_NOT_FOUND_MESSAGE });
-      } else if (err.name === 'castError') {
-        res.status(INVALID_DATA).send({ error: INVALID_DATA_MESSAGE });
-      } else {
-        res.status(SERVER_ERROR).send({ error: SERVER_ERROR_MESSAGE });
-      }
-    });
+  cardIdValidateProcess(
+    req,
+    res,
+    Card.findByIdAndRemove(
+      _id,
+    )
+  );
 };
 
 // PUT REQUEST
@@ -59,39 +52,29 @@ const deleteCardById = (req, res) => {
 const likeCard = (req, res) => {
   const cardId = req.params._id;
   const userId = req.user._id;
-  Card.findByIdAndUpdate(cardId,
-    { $addToSet: { likes: userId } },
-    { new: true }
-  )
-    .orFail()
-    .then((card) => res.status(200).send(card))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(NOT_FOUND).send({ Error: CARD_NOT_FOUND_MESSAGE });
-      } else if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ Error: INVALID_DATA_MESSAGE });
-      } else {
-        res.status(SERVER_ERROR).send({ Error: SERVER_ERROR_MESSAGE });
-      }
-    });
+  cardIdValidateProcess(
+    req,
+    res,
+    Card.findByIdAndUpdate(
+      cardId,
+      { $addToSet: { likes: userId } },
+      { new: true }
+    )
+  );
 };
 
 // DELETE REQUEST, ROUTE = ('/cards/:_id/likes')
 const disLikeCard = (req, res) => {
   const cardId = req.params._id;
   const userId = req.user._id;
-  Card.findByIdAndUpdate(cardId, { $pull: { likes: userId } }, { new: true })
-    .orFail()
-    .then((card) => res.status(200).send(card))
-    .catch((err) => {
-      if (err.name === 'DocumentNotFoundError') {
-        res.status(NOT_FOUND).send({ Error: CARD_NOT_FOUND_MESSAGE });
-      } else if (err.name === 'CastError') {
-        res.status(INVALID_DATA).send({ Error: INVALID_DATA_MESSAGE });
-      } else {
-        res.status(SERVER_ERROR).send({ Error: SERVER_ERROR_MESSAGE });
-      }
-    });
+  cardIdValidateProcess(
+    req,
+    res,
+    Card.findByIdAndUpdate(
+      cardId,
+      { $pull: { likes: userId } },
+      { new: true })
+  );
 };
 
 module.exports = {
